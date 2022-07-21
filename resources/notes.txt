@@ -1,0 +1,93 @@
+1. insight:
+- pdf_data_khuong_shuffle_v1411 == pdf_data_khuong_shuffle_v2005 (857 rows)
+- pdf_data_khuong_shuffle_v2911 1288 rows
+
+- data eID_real aKhuong (20/05):
+	+ label:	/share/team/anvb/eID_sample/sample/label/eID_real
+	+ data: 	/share/team/anvb/eID_sample/sample/sample/eID_real
+		+ train 	700 
+		+ val 		75 
+		+ test 		82
+	+ (pdf_data_khuong_shuffle_v2911) /share/team/anvb/IDCorner-eID_3k: all train 1288
+
+- data oldID + newID:
+	+ /mnt/share/dal/huynd5/id_corner_detection/ALL_DATA/train 	26112
+	+ /mnt/share/dal/huynd5/id_corner_detection/ALL_DATA/val 	875
+	+ /share/team/anvb/idcorner_testset 						1098
+
+- notebook 15classes:
+	+ id_corner_detection: OLD_ID_ALL + NEW_ID_ALL = ALL_DATA
+
+- pdf_data_khuong_shuffle_v2005.csv và pdf_data_khuong_shuffle_v1411.csv như nhau
+
+- aKhuong eID
+	+ /share/team/anvb/eID_sample/sample/sample/eID_real (2005) 	857 samples (700-75-80)
+	+ /share/team/anvb/IDCorner-eID_3k (1411) 						1288 samples (1288-0-0)
+- cũ trước đó old ID + new ID:
+	+ /mnt/share/dal/huynd5/id_corner_detection/ALL_DATA/train 	26112 (NEW_ID_ALL/5936 + OLD_ID_ALL/20176)
+	+ /mnt/share/dal/huynd5/id_corner_detection/ALL_DATA/val 	875 (NEW_ID_ALL/210 + OLD_ID_ALL/665)
+	+ /share/team/anvb/idcorner_testset 						1098 
+- combination:
+	+ train: 28100
+	+ val: 950
+	+ test: 1180
+	
+==============================================================
+1. tổng hơp dataset của a Ân thành json original size (ko expand):
+- original_size_test_2702.json
+- original_size_train_2702.json
+- original_size_val_2702.json
+
+
+2. data tự augmentation crop 1 phần góc:
+- json_data/aug_train_2802_1keID.json
+- json_data/aug_train_2802_1knewID.json
+- json_data/aug_train_2802_3koldID.json
+
+
+3. data tự augmentation crop nguyên 1 góc:
+- json_data/aug_train_0103_1keID_removecorner.json
+- json_data/aug_train_0103_1knewID_removecorner.json
+- json_data/aug_train_0103_3koldID_removecorner.json
+
+
+==> merge data:
+4 = 1+2:
+- original_size_test_2702.json
+- original_size_merged_augcrop_train_2802.json
+- original_size_val_2702.json
+
+5 = 2+3:
+- original_size_test_2702.json
+- original_size_merged_augcrop_removecorner_train_0103.json
+
+
+6 = expand 4 sides
+- expand_size_test_2702.json
+- expand_size_merged_augcrop_removecorner_train_0103.json
+- expand_size_val_2702.json
+
+7 = expand to center 1/8
+- original_size_test_2702.json (aug_test_0203.json)
+- original_size_merged_augcrop_removecorner_train_0103.json -> expandcenter_merged_augcrop_removecorner_train_0203.json 
+- original_size_val_2702.json -> aug_cutoff_remove_corner_val_0203.json -> expandcenter_aug_cutoff_remove_corner_val_0203.json
+
+8 = expand to center 1/12
+- original_size_test_2702.json (aug_test_0203.json)
+- original_size_merged_augcrop_removecorner_train_0103.json -> expandcenter1_12_merged_augcrop_removecorner_train_0203.json
+- original_size_val_2702.json -> aug_cutoff_remove_corner_val_0203.json -> expandcenter1_12_aug_cutoff_remove_corner_val_0203.json 
+
+9 = expand to center 1/14
+- original_size_test_2702.json (aug_test_0203.json)
+- original_size_merged_augcrop_removecorner_train_0103.json -> expandcenter1_14_merged_augcrop_removecorner_train_0203.json
+- original_size_val_2702.json -> aug_cutoff_remove_corner_val_0203.json -> expandcenter1_14_aug_cutoff_remove_corner_val_0203.json 
+
+10. auto crop none, 0 -> 100 crop
+- mới chỉnh cho aug eID và newID, chưa gen
+- còn: gen cả 3 types
+- expand (ratio 0.2 theo script đã chỉnh)
+- đưa vào train
+
+
+- json_data/original_size_augmerge_0304.json  => reduce_size_augmerge_0304.json
+- json_data/original_size_augval1k_0304.json  => reduce_size_augval1k_0304.json
