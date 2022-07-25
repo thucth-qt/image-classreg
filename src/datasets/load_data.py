@@ -8,16 +8,6 @@ from torchvision import datasets
 from torchvision.transforms import ToTensor
 
 
-###############################################################################
-# from torchvision import transforms
-# transform = transforms.Compose([
-#     transforms.Resize(256),
-#     transforms.CenterCrop(256),
-#     transforms.ToTensor(),
-#     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
-#     ])
-# target_transform = transforms.Lambda(lambda x: int(x))
-###############################################################################
 
 class DatasetFromCsv(Dataset):
     '''

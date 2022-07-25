@@ -26,26 +26,36 @@ def show_img(amount, part, label, type_id):
         print(e)
         
 # def load_img(part, label, type_id, amount=None):
-def load_background(img_paths, amount=None):
+def load_background(img_paths, backegrounds,amount=None):
     ''' Input: path to label folder'''
-    results=[]
     random.shuffle(img_paths)
-    for img_path in img_paths[:amount]:
+    for img_path in tqdm(img_paths[:amount]):
         try:
             img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
-            results.append([img, os.path.basename(img_path)])
+            backegrounds.append([img, os.path.basename(img_path)])
         except Exception as e:
             print(e)
             print(img_path)
-    return results
+    return backegrounds
 
 def load_foreground(path):
     results=[]
     for img_path in os.listdir(path):
         try:
             full_path = os.path.join(path,img_path)
-            glare = cv2.imread(full_path)[:,:,::-1]
-            results.append(glare)
+            img = cv2.imread(full_path,cv2.IMREAD_UNCHANGED)
+
+            if img.ndim == 3:
+                img_rgba = cv2.cvtColor(img, cv2.COLOR_RGB2RGBA)
+                img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+                img_rgba[:,:,3][img_gray<5] =0
+                img_rgba[:,:,3][img_gray>250] =0
+                img = img_rgba
+                img[:,:,-1] = cv2.medianBlur(img[:,:,-1],5)
+
+            img_bgr = img[:,:,:3]
+            img[:,:,:3] = img_bgr[:,:,::-1]
+            results.append(img)
         except Exception as e:
             print(e)
             print(full_path)
@@ -69,13 +79,10 @@ def resize_scale(src, frac=1.):
     input: src(H,W,C)
     '''
     frac = float(frac)
-    print(src.shape)
-    print(frac)
     # resize image
     # if frac < 1:
     #     src = apply_exponential(src, random.randint(2, 6))
     src_resize = cv2.resize(src, dsize=(int(src.shape[1]*frac), int(src.shape[0]*frac)), fx=frac, fy=frac, interpolation=cv2.INTER_CUBIC)
-    print(src_resize.shape)
     #center image
     # original_center = (src.shape[0]//2, src.shape[1]//2)
     # resized_center = (src_resize.shape[0]//2, src_resize.shape[1]//2)
@@ -95,16 +102,12 @@ def random_translate(src, background_size, bbox):
     ################################
     #   translate in bounding box  #
     ################################
-    if bbox:
-        t = bbox[0]
-        l = bbox[1]
-        w = bbox[2]
-        h = bbox[3]
-    else:
-        l = 0
-        t = 0
-        w = background_size[1]
-        h = background_size[0]
+    t = bbox[0][1]
+    l = bbox[0][0]
+    w = bbox[1][0]- bbox[0][0]
+    h = bbox[2][1]- bbox[0][1]
+    assert w > 0 and h > 0
+
 
     dx = np.random.randint(-w//2, w//2)
     dy = np.random.randint(-h//2, h//2)
@@ -112,7 +115,7 @@ def random_translate(src, background_size, bbox):
     src = np.pad(src, pad_width=[(-min(0, dy), max(0, dy)), (-min(0, dx), max(0, dx)), (0, 0)], mode="constant")
     trans_mat1 = np.array([[1, 0, dx],
                            [0, 1, dy]], dtype=np.float64)
-    src = cv2.warpAffine(src, trans_mat1, src.shape[1::-1], flags=cv2.INTER_LINEAR)
+    src = cv2.warpAffine(src, trans_mat1, src.shape[1::-1], flags=cv2.INTER_CUBIC)
     #################################################################
     #  translate center and crop from the center to ouside          #
     #################################################################
@@ -123,7 +126,7 @@ def random_translate(src, background_size, bbox):
     center_glare = (src.shape[1]//2, src.shape[0]//2)
     trans_mat2 = np.array([[1, 0, center_id_on_background[0] - center_glare[0]],
                            [0, 1, center_id_on_background[1]-center_glare[1]]], dtype=np.float64)
-    result = cv2.warpAffine(background, trans_mat2, background.shape[1::-1], flags=cv2.INTER_LINEAR)
+    result = cv2.warpAffine(background, trans_mat2, background.shape[1::-1], flags=cv2.INTER_CUBIC)
     result = result[:background_size[0], :background_size[1], :]
     result = np.clip(result, 0, 255).astype(np.uint8)
     return result
@@ -138,14 +141,22 @@ def change_brightness(src, brightness=100):
     return np.uint8(src)
 
 
-def rotate_image(src, angle):
+def padrotate_image(src, angle):
     size_new = int(np.sqrt(src.shape[0]**2+src.shape[1]**2))
     pad_h = (size_new-src.shape[0])//2
     pad_w = (size_new-src.shape[1])//2
     src = np.pad(src, [(pad_h, pad_h), (pad_w, pad_w), (0, 0)], mode="constant")
     image_center = tuple(np.array(src.shape[1::-1]) / 2)
     rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
-    result = cv2.warpAffine(src, rot_mat, src.shape[1::-1], flags=cv2.INTER_NEAREST)
+    result = cv2.warpAffine(src, rot_mat, src.shape[1::-1], flags=cv2.INTER_CUBIC)
+    
+    return result, angle, pad_h, pad_w, rot_mat
+
+def unpadrotate_image(src, angle, pad_h, pad_w):
+    image_center = tuple(np.array(src.shape[1::-1]) / 2)
+    rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
+    result = cv2.warpAffine(src, rot_mat, src.shape[1::-1], flags=cv2.INTER_CUBIC)
+    result = result[pad_h:-pad_h, pad_w:-pad_w, :]
     return result
 
 
@@ -189,30 +200,22 @@ def random_color(src, is_color=0.2):
     return src
 
 
-def get_area(bbox):
-    "need to reimplement"
-    # return bbox['height']*bbox['width']
-    return (bbox[2]-bbox[0])*(bbox[3]-bbox[1])
+def get_center(corner_bbox):
+    return ((corner_bbox[0] + corner_bbox[2])//2, (corner_bbox[1] + corner_bbox[3])//2)
 
-def process(img_and_key, glare, fg_size, path2bbox, percent=1., is_debug=False):
+def get_area(corners):
+    w = np.linalg.norm(corners[0]-corners[1])
+    h = np.linalg.norm(corners[1]-corners[2])
+    return w*h
+
+def process(img, glare_rgba, corners=None, percent=1., is_debug=False):
     ##########################
     # normalize glare        #
     ##########################
-    img = img_and_key[0]
-    path_img = img_and_key[1]
-    try:
-        if path_img in path2bbox:
-            bbox = path2bbox[path_img]
-        else:
-            bbox = None
-    except Exception as e:
-        print("img.shape: ", img.shape)
-        print("path_img.shape: ", img_and_key[1].shape)
-        raise e
     # This for easy purpose, to implement: use exact bbounding box
-    bbox = bbox['full']
+    
     if is_debug:
-        plt.figure(figsize=(20, 20))
+        plt.figure(figsize=(60, 30))
     if is_debug:
         plt.subplot(191).title.set_text("original")
         plt.subplot(191).imshow(img)
@@ -222,40 +225,32 @@ def process(img_and_key, glare, fg_size, path2bbox, percent=1., is_debug=False):
     ##########################
     # process glare          #
     ##########################
-    glare_rgba = cv2.cvtColor(glare, cv2.COLOR_RGB2RGBA)
-    glare_gray = cv2.cvtColor(glare, cv2.COLOR_RGB2GRAY)
-    glare_rgba[:,:,3][glare_gray<10] =0
-    glare_rgba[:,:,3][glare_gray>250] =0
 
-    s_fg = glare.shape[0]*glare.shape[1]
-    s_bg = get_area(bbox)
+    s_fg = glare_rgba.shape[0]*glare_rgba.shape[1]
+    s_bg = get_area(corners)
     ratio = percent/s_fg*s_bg
     glare_changed = resize_scale(glare_rgba, frac=np.sqrt(ratio))
     if is_debug:
         plt.subplot(192).title.set_text("resize_scale")
         plt.subplot(192).imshow(glare_changed)
-    glare_changed = random_color(glare_changed, is_color=0.1)  # return glare with 3 channels (YCrCb)
-    print("max alpha resize_scale: ", glare_changed[:, :, 3].max())
+    glare_changed = random_color(glare_changed, is_color=0.3)  # return glare with 3 channels (YCrCb)
 
     if is_debug:
         plt.subplot(193).title.set_text("random_color")
         plt.subplot(193).imshow(glare_changed)
-    print("max alpha random_color: ", glare_changed[:, :, 3].max())
     # glare_changed = apply_exponential(glare_changed, random.randint(1, 2))
     if is_debug:
         plt.subplot(194).title.set_text("apply_exponential")
         plt.subplot(194).imshow(glare_changed)
-    glare_changed = rotate_image(glare_changed, random.randint(0, 360))
-    print("max alpha apply_exponential: ", glare_changed[:, :, 3].max())
+    glare_changed ,*_= padrotate_image(glare_changed, random.randint(0, 360))
     if is_debug:
         plt.subplot(195).title.set_text("rotate_image")
         plt.subplot(195).imshow(glare_changed)
-    # glare_changed = apply_exponential(glare_changed, random.randint(1, 2))
+    glare_changed = apply_exponential(glare_changed, random.randint(10, 15))
     if is_debug:
         plt.subplot(196).title.set_text("apply_exponential")
         plt.subplot(196).imshow(glare_changed)
-    glare_changed = random_translate(glare_changed, img.shape, bbox)  # return glare with the same size (H,W) of img
-    print("max alpha rotate_image: ", glare_changed[:, :, 3].max())
+    glare_changed = random_translate(glare_changed, img.shape, corners)  # return glare with the same size (H,W) of img
     if is_debug:
         plt.subplot(197).title.set_text("random_translate")
         plt.subplot(197).imshow(glare_changed)
@@ -268,15 +263,14 @@ def process(img_and_key, glare, fg_size, path2bbox, percent=1., is_debug=False):
 #         plt.subplot(199).title.set_text("equalizeHist")
 #         plt.subplot(199).imshow(glare_changed)
 #         plt.show()
-    # glare_changed = change_brightness(glare_changed, random.randint(30, 50))
+    glare_changed = change_brightness(glare_changed, random.randint(50, 130))
 #     glare_changed = glare_changed * np.random.choice(a=[-1,1], size=1,  p = [0.2, 0.8]) #bright or dark
     # import pdb; pdb.set_trace()
-    print("max alpha rotate_image: ", glare_changed[:, :, 3].max())
     
 
     # glare_changed = cv2.cvtColor(glare_changed, cv2.COLOR_RGBA2RGB)
     img = img.astype(np.uint8)
-    img = cv2.cvtColor(img, cv2.COLOR_RGB2RGBA)
+    # img = cv2.cvtColor(img, cv2.COLOR_RGB2RGBA)
     ##########################
     # blend glare            #
     ##########################
@@ -297,17 +291,16 @@ def process(img_and_key, glare, fg_size, path2bbox, percent=1., is_debug=False):
     # pdb.set_trace()
     # patch_fg[:, :, 3] = cv2.equalizeHist(patch_fg[:, :, 3])
     patch_fg = patch_fg.astype(np.float32)
-    print("max alpha: ", patch_fg[:,:,3].max())
     patch_bg = patch_bg.astype(np.float32)
-    patch_output[:,:,:3] = patch_fg[:,:,:3]*(patch_fg[:,:,3:]/255) + patch_bg[:,:,:3]*((255-patch_fg[:,:,3:])/255) 
-
+    # patch_output[:,:,:3] = patch_fg[:,:,:3]*(patch_fg[:,:,3:]/255) + patch_bg[:,:,:3]*((255-patch_fg[:,:,3:])/255) 
+    patch_output = patch_fg
     # patch_bg[patch_fg != 0] = patch_fg[patch_fg != 0]
     
     # import pdb;pdb.set_trace()
     img[slice_0, slice_1, :] =patch_output
     img = np.clip(img, 0, 255).astype(np.uint8)
 
-    img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
+    # img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
 
     # if is_debug:
     #     plt.subplot(192).title.set_text("result")
@@ -330,17 +323,15 @@ def process(img_and_key, glare, fg_size, path2bbox, percent=1., is_debug=False):
     
     img = np.clip(img, 0, 255).astype(np.uint8)
 #     img = cv2.cvtColor(img, cv2.COLOR_YCrCb2RGB)
+    plt.show()
+    return img, corners
 
-    return [img, img_and_key[1]]
-
-
-def process_wrapper(img_and_key, glares, fg_size=(112,112), path2bbox=None, is_debug=False):
-    times = np.random.choice(a=[1, 2, 3], size=1, p=[0.9, 0.05, 0.05])
+def process_wrapper(img, glares, corners=None, percent=0.05, is_debug=False):
+    times = np.random.choice(a=[1, 2, 3, 4], size=1, p=[0.9, 0.05, 0.025, 0.025])
+    percent = percent/times
     glares_chosen = random.choices(glares, k=int(times))
-
-    img, key = img_and_key[0], img_and_key[1]
-    if key not in path2bbox:
+    if corners is None:
         return None
     for glare_chosen in glares_chosen:
-        img_and_key = process(img_and_key, glare_chosen, fg_size, path2bbox, is_debug)
-    return img_and_key[0]
+        img, _ = process(img, glare_chosen, corners=corners, percent=percent, is_debug=is_debug)
+    return img
