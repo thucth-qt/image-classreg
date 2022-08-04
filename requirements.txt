@@ -2,3 +2,4 @@ pandas
 ipykernel
 opencv-python
 matplotlib
+pyyaml

@@ -8,11 +8,8 @@ from torchvision.transforms import *
 
 from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
-
-input_size = (224,224)
-means = (0.485, 0.456, 0.406)
-stds = (0.229, 0.224, 0.225)
-
+import torch
+from src.constants import constants
     ##########################################################################
     #                       TorchVision preprocessing                        #
     ##########################################################################
@@ -20,7 +17,7 @@ stds = (0.229, 0.224, 0.225)
     # "ToTensor",
     # "PILToTensor",
     # "ConvertImageDtype",
-    # "ToPILImage",
+    # "ToPILImage", : this is because torchvision just support for PILImage
     # "Normalize",
     # "Resize",
     # "CenterCrop",
@@ -53,24 +50,53 @@ stds = (0.229, 0.224, 0.225)
     # "RandomEqualize",
 
 #Label
-target_transform = transforms.Lambda(lambda x: int(x))
-
+def create_target_tf():
+    # transform_target = transforms.Lambda(lambda x: int(x))
+    transform_target = transforms.Lambda(lambda x: torch.tensor([x], dtype=torch.float32))
+    return transform_target
 
 #Train samples
-transform_train = transforms.Compose([
-    transforms.RandomCrop(),
-    transforms.RandomHorizontalFlip(0.3),
-    transforms.RandomVerticalFlip(0.3),
-    # transforms.RandomResizedCrop(input_size, scale=(0.9, 1.0), ratio=(0.8, 1.2)),
-    transforms.Resize(input_size),
-    transforms.ToTensor(),
-    transforms.Normalize(means, stds),
-    ])
+def create_train_tf(input_size=None, means=None, stds=None):
+    if not input_size:
+        input_size=constants.INPUT_SIZE
+    if not means:
+        means=constants.IMAGENET_DEFAULT_MEAN
+    if not stds:
+        stds=constants.IMAGENET_DEFAULT_STD
 
+    transform_train = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.Resize(input_size),
+        transforms.RandomHorizontalFlip(0.3),
+        transforms.RandomVerticalFlip(0.3),
+        # transforms.RandomResizedCrop(input_size, scale=(0.9, 1.0), ratio=(0.8, 1.2)),
+        transforms.ToTensor(),
+        transforms.Normalize(means, stds),
+        ])
+    return transform_train
 
 #Val samples
-transform_val = transforms.Compose([
-    transforms.Resize(input_size),
-    transforms.ToTensor(),
-    transforms.Normalize(means, stds),
-    ])
+def create_val_tf(input_size=None, means=None, stds=None):
+    if not input_size:
+        input_size=constants.INPUT_SIZE
+    if not means:
+        means=constants.IMAGENET_DEFAULT_MEAN
+    if not stds:
+        stds=constants.IMAGENET_DEFAULT_STD
+        
+    transform_val = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.Resize(input_size),
+        transforms.ToTensor(),
+        transforms.Normalize(means, stds),
+        ])
+    return transform_val
+
+
+def invert_val_tf(input, means=None, stds=None):
+    if not means:
+        means=constants.IMAGENET_DEFAULT_MEAN
+    if not stds:
+        stds=constants.IMAGENET_DEFAULT_STD
+    
+    return transform_val(input)
