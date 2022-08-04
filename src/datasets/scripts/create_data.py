@@ -191,9 +191,9 @@ def gen_data(amount, percent, foregrounds_path, dir_store, csv_file, score=None,
 # %%
 percent=0.3
 
-output_temp = "/share/team/thucth/data/id_occlusion/data_occlusion_%s_%s_0727" % (split, str(int(percent*100))+"_out")
+output_temp = "/share/team/thucth/data/image_classreg/data_occlusion_%s_%s_0727" % (split, str(int(percent*100))+"_out")
 dir_store = output_temp
-csv_file = output_temp.replace("/share/team/thucth/data/id_occlusion", "./resources")+".csv"
+csv_file = output_temp.replace("/share/team/thucth/data/image_classreg", "./resources")+".csv"
 
 err_paths = gen_data(amount=2000, \
     percent=percent, \
@@ -208,9 +208,9 @@ print(csv_file)
 
 percent=0.4
 
-output_temp = "/share/team/thucth/data/id_occlusion/data_occlusion_%s_%s_0727"%(split, str(int(percent*100))+"_out")
+output_temp = "/share/team/thucth/data/image_classreg/data_occlusion_%s_%s_0727"%(split, str(int(percent*100))+"_out")
 dir_store = output_temp
-csv_file = output_temp.replace("/share/team/thucth/data/id_occlusion", "./resources")+".csv"
+csv_file = output_temp.replace("/share/team/thucth/data/image_classreg", "./resources")+".csv"
 
 err_paths = gen_data(amount=2000, \
     percent=percent, \
@@ -227,9 +227,9 @@ print(csv_file)
 # %%
 percent=0.05
 
-output_temp = "/share/team/thucth/data/id_occlusion/data_occlusion_%s_%s_0727"%(split, str(int(percent*100)))
+output_temp = "/share/team/thucth/data/image_classreg/data_occlusion_%s_%s_0727"%(split, str(int(percent*100)))
 dir_store = output_temp
-csv_file = output_temp.replace("/share/team/thucth/data/id_occlusion", "./resources")+".csv"
+csv_file = output_temp.replace("/share/team/thucth/data/image_classreg", "./resources")+".csv"
 
 
 err_paths = gen_data(amount=2000, \
@@ -245,9 +245,9 @@ print(csv_file)
 # %%
 percent=0.2
 
-output_temp = "/share/team/thucth/data/id_occlusion/data_occlusion_%s_%s_0727"%(split, str(int(percent*100)))
+output_temp = "/share/team/thucth/data/image_classreg/data_occlusion_%s_%s_0727"%(split, str(int(percent*100)))
 dir_store = output_temp
-csv_file = output_temp.replace("/share/team/thucth/data/id_occlusion", "./resources")+".csv"
+csv_file = output_temp.replace("/share/team/thucth/data/image_classreg", "./resources")+".csv"
 
 
 err_paths = gen_data(amount=2000, \
@@ -263,9 +263,9 @@ print(csv_file)
 # %%
 percent=0.4
 
-output_temp = "/share/team/thucth/data/id_occlusion/data_occlusion_%s_%s_0727"%(split, str(int(percent*100)))
+output_temp = "/share/team/thucth/data/image_classreg/data_occlusion_%s_%s_0727"%(split, str(int(percent*100)))
 dir_store = output_temp
-csv_file = output_temp.replace("/share/team/thucth/data/id_occlusion", "./resources")+".csv"
+csv_file = output_temp.replace("/share/team/thucth/data/image_classreg", "./resources")+".csv"
 
 
 err_paths = gen_data(amount=2000, \
@@ -281,9 +281,9 @@ print(csv_file)
 # %%
 percent=0.6
 
-output_temp = "/share/team/thucth/data/id_occlusion/data_occlusion_%s_%s_0727"%(split, str(int(percent*100)))
+output_temp = "/share/team/thucth/data/image_classreg/data_occlusion_%s_%s_0727"%(split, str(int(percent*100)))
 dir_store = output_temp
-csv_file = output_temp.replace("/share/team/thucth/data/id_occlusion", "./resources")+".csv"
+csv_file = output_temp.replace("/share/team/thucth/data/image_classreg", "./resources")+".csv"
 
 err_paths = gen_data(amount=2000, \
     percent=percent, \
@@ -298,9 +298,9 @@ print(csv_file)
 # %%
 percent=0.6
 
-output_temp = "/share/team/thucth/data/id_occlusion/data_occlusion_%s_%s_0727"%(split, str(int(percent*100)))
+output_temp = "/share/team/thucth/data/image_classreg/data_occlusion_%s_%s_0727"%(split, str(int(percent*100)))
 dir_store = output_temp
-csv_file = output_temp.replace("/share/team/thucth/data/id_occlusion", "./resources")+".csv"
+csv_file = output_temp.replace("/share/team/thucth/data/image_classreg", "./resources")+".csv"
 
 err_paths = gen_data(amount=2000, \
     percent=percent, \
@@ -315,9 +315,9 @@ print(csv_file)
 # %%
 percent=0.8
 
-output_temp = "/share/team/thucth/data/id_occlusion/data_occlusion_%s_%s_0727"%(split, str(int(percent*100)))
+output_temp = "/share/team/thucth/data/image_classreg/data_occlusion_%s_%s_0727"%(split, str(int(percent*100)))
 dir_store = output_temp
-csv_file = output_temp.replace("/share/team/thucth/data/id_occlusion", "./resources")+".csv"
+csv_file = output_temp.replace("/share/team/thucth/data/image_classreg", "./resources")+".csv"
 
 err_paths = gen_data(amount=2000, \
     percent=percent, \
@@ -332,9 +332,9 @@ print(csv_file)
 # %%
 percent=0.9
 
-output_temp = "/share/team/thucth/data/id_occlusion/data_occlusion_%s_%s_0727"%(split, str(int(percent*100)))
+output_temp = "/share/team/thucth/data/image_classreg/data_occlusion_%s_%s_0727"%(split, str(int(percent*100)))
 dir_store = output_temp
-csv_file = output_temp.replace("/share/team/thucth/data/id_occlusion", "./resources")+".csv"
+csv_file = output_temp.replace("/share/team/thucth/data/image_classreg", "./resources")+".csv"
 
 err_paths = gen_data(amount=2000, \
     percent=percent, \
@@ -349,9 +349,9 @@ print(csv_file)
 # %%
 percent=0.9
 
-output_temp = "/share/team/thucth/data/id_occlusion/data_occlusion_%s_%s_0727"%(split, str(int(percent*100)))
+output_temp = "/share/team/thucth/data/image_classreg/data_occlusion_%s_%s_0727"%(split, str(int(percent*100)))
 dir_store = output_temp
-csv_file = output_temp.replace("/share/team/thucth/data/id_occlusion", "./resources")+".csv"
+csv_file = output_temp.replace("/share/team/thucth/data/image_classreg", "./resources")+".csv"
 
 err_paths = gen_data(amount=2000, \
     percent=percent, \

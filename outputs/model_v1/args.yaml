@@ -11,7 +11,7 @@ bn_eps: null
 bn_momentum: null
 channels_last: false
 checkpoint_hist: 10
-checkpoint_path: /home/thucth/thucth/project/id_occlusion/outputs/efficientnet_b0/v6_more_out_in/model_best.pth.tar
+checkpoint_path: /home/thucth/thucth/project/image_classreg/outputs/efficientnet_b0/v6_more_out_in/model_best.pth.tar
 clip_grad: null
 clip_mode: norm
 color_jitter: 0.4
