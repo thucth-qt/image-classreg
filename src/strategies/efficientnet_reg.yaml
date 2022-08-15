@@ -1,17 +1,17 @@
 #model define
 model: "efficientnet_b0"
-pretrained: ""
+pretrained: false
 checkpoint_path: "/home/thucth/thucth/project/id_occlusion/outputs/efficientnet_b0/20220727-150354-efficientnet_b0-112_112/model_best.pth.tar"
 resume: ""
 num_classes: 1
 gp: "avg"
 input_size: 
-  - 112 
-  - 112 
+  - 224 
+  - 224 
   - 3
 batch_size: 128
 validation_batch_size: 128
-channels_last: false
+channels_last: false #should be false to be easy
 
 #data
 workers: 16
@@ -36,5 +36,5 @@ epochs: 100
 patience_epochs: 5
 
 #io traning
-output: "./outputs/efficientnet_b0"
-experiment: "v5_balance_train_1"
+output: "./outputs/model_v1"
+experiment: ""

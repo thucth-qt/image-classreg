@@ -30,7 +30,7 @@ def main():
     utils.random_seed(1101)
 
     model = create_model(
-        "efficientnet_b0",
+        args.model,
         pretrained=args.pretrained, #load pretrained weights from the internet
         checkpoint_path=args.checkpoint_path,
         num_classes=args.num_classes,
