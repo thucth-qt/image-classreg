@@ -97,7 +97,11 @@ def resize_scale(src, frac=1.):
     return src_resize
 
 
-def random_translate(src, background_size, bbox):
+def random_translate(src, background_size, location_percent=(0., 1., 0., 1.) , bbox=None):
+    '''
+    location_percent = (w_min, w_max, h_min, h_max), define how far to translate the src from center image 
+    (0., 1., 0., 1.) means translate to somewhere between image center and image edges
+    '''
 
     ################################
     #   translate in bounding box  #
@@ -108,9 +112,10 @@ def random_translate(src, background_size, bbox):
     h = bbox[2][1]- bbox[0][1]
     assert w > 0 and h > 0
 
-
-    dx = np.random.randint(-w//2, w//2)
-    dy = np.random.randint(-h//2, h//2)
+    sign = 1 if random.random() < 0.5 else -1
+    dx = sign*np.random.randint(w*location_percent[0], w*location_percent[1]) 
+    sign = 1 if random.random() < 0.5 else -1
+    dy = sign*np.random.randint(h*location_percent[2], h*location_percent[3])
 
     src = np.pad(src, pad_width=[(-min(0, dy), max(0, dy)), (-min(0, dx), max(0, dx)), (0, 0)], mode="constant")
     trans_mat1 = np.array([[1, 0, dx],
@@ -208,7 +213,7 @@ def get_area(corners):
     h = np.linalg.norm(corners[1]-corners[2])
     return w*h
 
-def process(img, glare_rgba, corners=None, percent=1., is_debug=False):
+def process(img, glare_rgba, corners=None, percent=1., location_percent=(0., 0.5, 0., 0.5), is_debug=False):
     ##########################
     # normalize glare        #
     ##########################
@@ -250,7 +255,7 @@ def process(img, glare_rgba, corners=None, percent=1., is_debug=False):
     if is_debug:
         plt.subplot(196).title.set_text("apply_exponential")
         plt.subplot(196).imshow(glare_changed)
-    glare_changed = random_translate(glare_changed, img.shape, corners)  # return glare with the same size (H,W) of img
+    glare_changed = random_translate(glare_changed, img.shape, location_percent, corners)  # return glare with the same size (H,W) of img
     if is_debug:
         plt.subplot(197).title.set_text("random_translate")
         plt.subplot(197).imshow(glare_changed)
@@ -326,12 +331,9 @@ def process(img, glare_rgba, corners=None, percent=1., is_debug=False):
     plt.show()
     return img, corners
 
-def process_wrapper(img, glares, corners=None, percent=0.05, is_debug=False):
-    times = np.random.choice(a=[1, 2, 3, 4], size=1, p=[0.9, 0.05, 0.025, 0.025])
-    percent = percent/times
-    glares_chosen = random.choices(glares, k=int(times))
+def process_wrapper(img, glares, corners=None, percent=0.05, location_percent=(0., 0.5, 0., 0.5), is_debug=False):
+    glare_chosen = random.choices(glares, k=1)[0]
     if corners is None:
         return None
-    for glare_chosen in glares_chosen:
-        img, _ = process(img, glare_chosen, corners=corners, percent=percent, is_debug=is_debug)
+    img, _ = process(img, glare_chosen, corners=corners, percent=percent, location_percent=location_percent, is_debug=is_debug)
     return img

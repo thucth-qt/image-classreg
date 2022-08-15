@@ -1,0 +1,40 @@
+#model define
+model: "efficientnet_b0"
+pretrained: ""
+checkpoint_path: "/home/thucth/thucth/project/id_occlusion/outputs/efficientnet_b0/v6_more_out_in/model_best.pth.tar"
+resume: ""
+num_classes: 1
+gp: "avg"
+input_size: 
+  - 224 
+  - 224 
+  - 3
+batch_size: 96
+validation_batch_size: 64
+channels_last: false
+
+#data
+workers: 16
+val_ds: "./resources/data_occlusion_val.csv"
+train_ds: "./resources/data_occlusion_train_0728.csv"
+
+#optim
+opt: "adam"
+momentum: 0.9
+weight_decay: 0.25
+drop_rate: 0.1
+loss: "mse"
+
+eval_metric: "loss"
+sched: "plateau"
+decay_rate: 0.1
+lr: 0.01
+min_lr: 0.000001
+warmup_lr: 0.0001
+warmup_epochs: 1
+epochs: 100
+patience_epochs: 5
+
+#io traning
+output: "./outputs/efficientnet_b0"
+experiment: "v6_more_out_in_224"

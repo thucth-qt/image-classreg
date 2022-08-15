@@ -1,11 +1,12 @@
 from torch.utils.data import DataLoader
 import os
 import pandas as pd
-from torchvision.io import read_image
+from torchvision import io 
 import torch
 from torch.utils.data import Dataset
 from torchvision import datasets
 from torchvision.transforms import ToTensor
+from src.datasets import preprocess
 
 
 
@@ -14,20 +15,20 @@ class DatasetFromCsv(Dataset):
     Create dataset from annotations_file.csv: path:str, label:number
 
     Usage:
-        train_ds = load_data.DatasetFromFolder("./labels_train.csv", ./data_train_raw, transform, target_transform)
+        train_ds = load_data.DatasetFromFolder("./labels_train.csv", transform, target_transform)
     '''
-    def __init__(self, annotations_file, img_dir, transform=None, target_transform=None):
+    def __init__(self, annotations_file, transform=None, target_transform=None):
         self.img_labels = pd.read_csv(annotations_file)
-        self.img_dir = img_dir
         self.transform = transform
         self.target_transform = target_transform
-        super().__init__(DatasetFromCsv)
+        super(DatasetFromCsv,self).__init__()
     def __len__(self):
         return len(self.img_labels)
 
     def __getitem__(self, idx):
-        img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
-        image = read_image(img_path)
+        img_path = self.img_labels.iloc[idx, 0] 
+        
+        image = io.read_image(img_path, mode=io.image.ImageReadMode.RGB)
         label = self.img_labels.iloc[idx, 1]
         if self.transform:
             image = self.transform(image)
@@ -86,9 +87,13 @@ class DatasetFromFolder(datasets.ImageFolder):
         super(DatasetFromFolder, self).__init__(folder_dir, transform=transform, target_transform=target_transform)
 
 
-def create_dataloader(dataset, batch_size, shuffle=True):
+def create_dataloader(dataset, batch_size, workers=4, shuffle=True):
     '''
     Usage:
         train_loader = load_data.create_dataloader(train_ds, batch_size=32, shuffle=True)
     '''
-    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
+    return DataLoader(dataset, batch_size=batch_size, num_workers=workers, shuffle=shuffle)
+
+
+
+

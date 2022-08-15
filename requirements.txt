@@ -2,3 +2,8 @@ pandas
 ipykernel
 opencv-python
 matplotlib
+pyyaml
+albumentations==0.4.5
+onnx
+pycuda<2021.1
+nvidia-tensorrt==7.2.3.4
